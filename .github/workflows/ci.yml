@@ -35,7 +35,7 @@ jobs:
       run: pytest tests/ui -v --html=ui-report.html --self-contained-html
 
     - name: Upload UI Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ui-test-report
         path: ui-testing/ui-report.html
