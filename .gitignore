@@ -1,18 +1,50 @@
+# -----------------------------
 # Python Virtual Environment
-/venv
+# -----------------------------
+venv/
+env/
 
-# Byte-compiled / optimized / DLL files
+# -----------------------------
+# Python cache files
+# -----------------------------
 __pycache__/
-*.py[cod]
+*.pyc
+*.pyo
+*.pyd
 
-# Pytest and Test Runner files
+# -----------------------------
+# Pytest cache / test reports
+# -----------------------------
 .pytest_cache/
-.coverage
+*.html
+*.xml
+*.log
 
-# Locust files (if any are generated)
+# Avoid committing reports from API/UI tests
+api-testing/*.html
+ui-testing/*.html
+
+# -----------------------------
+# Locust temporary files
+# -----------------------------
 *.hatch
+*.locust
+locust.db
 
-# Common operating system files
+# -----------------------------
+# VS Code / IDE files
+# -----------------------------
+.vscode/
+.idea/
+
+# -----------------------------
+# OS files
+# -----------------------------
 .DS_Store
 Thumbs.db
 
+# -----------------------------
+# Build / distribution folders
+# -----------------------------
+build/
+dist/
