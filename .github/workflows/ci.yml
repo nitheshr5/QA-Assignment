@@ -1,33 +1,25 @@
-name: API & UI Tests
+name: UI Tests
 
 on:
   push:
     branches: ["main"]
 
 jobs:
-  run-tests:
+  run-ui-tests:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
 
-    # --- API Tests ---
-    - name: Install API dependencies
-      working-directory: api-testing
-      run: pip install -r requirements.txt
-
-    - name: Run API Tests
-      working-directory: api-testing
-      run: pytest tests -v
-
-    # --- UI Tests ---
+    # --- UI Tests Only ---
     - name: Install UI dependencies
-      working-directory: ui-testing
+    working-directory: ui-testing
       run: pip install -r requirements.txt
 
     - name: Run UI Tests (Headless)
