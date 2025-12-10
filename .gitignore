@@ -1,0 +1,18 @@
+# Python Virtual Environment
+/venv
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Pytest and Test Runner files
+.pytest_cache/
+.coverage
+
+# Locust files (if any are generated)
+*.hatch
+
+# Common operating system files
+.DS_Store
+Thumbs.db
+
