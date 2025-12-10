@@ -1,0 +1,41 @@
+name: API & UI Tests
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    # --- API Tests ---
+    - name: Install API dependencies
+      working-directory: api-testing
+      run: pip install -r requirements.txt
+
+    - name: Run API Tests
+      working-directory: api-testing
+      run: pytest tests -v
+
+    # --- UI Tests ---
+    - name: Install UI dependencies
+      working-directory: ui-testing
+      run: pip install -r requirements.txt
+
+    - name: Run UI Tests (Headless)
+      working-directory: ui-testing
+      run: pytest tests/ui -v --html=ui-report.html --self-contained-html
+
+    - name: Upload UI Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: ui-test-report
+        path: ui-testing/ui-report.html

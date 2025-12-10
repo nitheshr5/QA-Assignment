@@ -7,7 +7,11 @@ BASE_URL = "https://reqres.in/api"
 
 
 
-
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                  "AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/120.0.0.0 Safari/537.36"
+}
 
 
 @pytest.mark.api
@@ -18,7 +22,7 @@ def test_list_users_success():
     - response contains a non-empty 'data' list
     - correct page number
     """
-    response = requests.get(f"{BASE_URL}/users", params={"page": 2})
+    response = requests.get(f"{BASE_URL}/users", params={"page": 2}, headers=HEADERS)
 
     assert response.status_code == 200, "Expected 200 OK for list users"
     body = response.json()
@@ -36,7 +40,7 @@ def test_get_single_user_success():
     - GET /users/2 returns 200
     - response contains user with id=2 and an email field
     """
-    response = requests.get(f"{BASE_URL}/users/2")
+    response = requests.get(f"{BASE_URL}/users/2", headers=HEADERS)
 
     assert response.status_code == 200, "Expected 200 OK for existing user"
     body = response.json()
@@ -54,7 +58,7 @@ def test_get_user_not_found():
     - GET /users/23 (non-existing user) should return 404
     - body is empty or minimal
     """
-    response = requests.get(f"{BASE_URL}/users/23")
+    response = requests.get(f"{BASE_URL}/users/23", headers=HEADERS)
 
     assert response.status_code == 404, "Expected 404 for non-existing user"
     # For Reqres this is usually an empty body {}
@@ -79,7 +83,7 @@ def test_register_success_and_missing_password():
         "email": "eve.holt@reqres.in",
         "password": "pistol"
     }
-    success_resp = requests.post(f"{BASE_URL}/register", json=valid_payload)
+    success_resp = requests.post(f"{BASE_URL}/register", json=valid_payload, headers=HEADERS)
     assert success_resp.status_code == 200, "Expected 200 for valid registration"
     success_body = success_resp.json()
 
@@ -90,7 +94,7 @@ def test_register_success_and_missing_password():
     missing_pwd_payload = {
         "email": "sydney@fife"
     }
-    error_resp = requests.post(f"{BASE_URL}/register", json=missing_pwd_payload)
+    error_resp = requests.post(f"{BASE_URL}/register", json=missing_pwd_payload, headers=HEADERS)
     # Reqres returns 400 + { "error": "Missing password" } for this. :contentReference[oaicite:2]{index=2}
     assert error_resp.status_code == 400, "Expected 400 when password is missing"
     error_body = error_resp.json()
@@ -110,7 +114,7 @@ def test_create_user_success():
         "job": "qa-intern"
     }
 
-    response = requests.post(f"{BASE_URL}/users", json=payload)
+    response = requests.post(f"{BASE_URL}/users", json=payload, headers=HEADERS)
 
     assert response.status_code == 201, "Expected 201 for user creation"
     body = response.json()
