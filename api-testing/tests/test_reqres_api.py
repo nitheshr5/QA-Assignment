@@ -1,11 +1,20 @@
 # tests/test_reqres_api.py
 
+"""
+Reqres API functional tests.
+
+Notes:
+- Reqres (https://reqres.in) is used for the official assignment tests.
+- Some environments (or Cloudflare rules) may block scripted requests; in that case
+  consider running the alternate test suite (test_alt_api.py) that targets
+  jsonplaceholder.typicode.com instead.
+"""
+
 import requests
 import pytest
 
 BASE_URL = "https://reqres.in/api"
 
-# Basic browser-like headers to look like a real client
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -15,16 +24,22 @@ HEADERS = {
     "Accept": "application/json",
 }
 
+def _maybe_json(resp):
+    """Return parsed JSON or None if body is empty / invalid JSON."""
+    try:
+        return resp.json()
+    except ValueError:
+        return None
 
 @pytest.mark.api
 @pytest.mark.positive
 @pytest.mark.smoke
 def test_get_users_page_2_returns_non_empty_list():
     """
-    Positive smoke test:
-    - GET /users?page=2 returns 200
-    - Correct page number
-    - Non-empty 'data' list of users
+    Smoke test:
+    - GET /users?page=2 should return 200
+    - The 'page' field should match requested page
+    - 'data' must be a non-empty list
     """
     response = requests.get(
         f"{BASE_URL}/users",
@@ -33,70 +48,59 @@ def test_get_users_page_2_returns_non_empty_list():
         timeout=10,
     )
 
-    assert response.status_code == 200, "Expected 200 OK for list users"
+    # If blocked, the remote might return HTML/403; let pytest decide if that's a failure
+    assert response.status_code == 200, (
+        f"Expected 200 OK for list users; got {response.status_code}. "
+        "If the host blocks scripted clients (Cloudflare), consider using the alternate tests."
+    )
 
-    body = response.json()
+    body = _maybe_json(response)
+    assert isinstance(body, dict), "Expected JSON object at top level"
     assert body.get("page") == 2, "Page number should match requested page"
     assert "data" in body, "'data' key should be present in response"
     assert isinstance(body["data"], list), "'data' should be a list"
     assert len(body["data"]) > 0, "User list should not be empty"
 
-
 @pytest.mark.api
 @pytest.mark.positive
 def test_get_existing_user_returns_correct_user():
     """
-    Positive test:
-    - GET /users/2 returns 200
-    - Response contains user with id=2 and an email field
+    GET /users/2 -> expect 200 and data containing user with id 2 and an email
     """
     response = requests.get(f"{BASE_URL}/users/2", headers=HEADERS, timeout=10)
 
-    assert response.status_code == 200, "Expected 200 OK for existing user"
+    assert response.status_code == 200, f"Expected 200 OK for existing user, got {response.status_code}"
 
-    body = response.json()
-    user = body.get("data")
+    body = _maybe_json(response)
+    user = body.get("data") if body else None
     assert user is not None, "'data' for single user should not be None"
-    assert user.get("id") == 2, "User id should be 2"
+    assert user.get("id") == 2, f"Expected user id 2, got {user.get('id')}"
     assert "email" in user, "User should contain an 'email' field"
-
 
 @pytest.mark.api
 @pytest.mark.negative
 def test_get_non_existing_user_returns_404():
     """
-    Negative test:
-    - GET /users/23 (non-existing user) should return 404
-    - Body is empty or minimal ({})
+    GET /users/23 (non-existing) -> should return 404 and an empty/minimal body.
     """
     response = requests.get(f"{BASE_URL}/users/23", headers=HEADERS, timeout=10)
+    assert response.status_code == 404, f"Expected 404 for non-existing user; got {response.status_code}"
 
-    assert response.status_code == 404, "Expected 404 for non-existing user"
-
-    # For Reqres this is usually an empty body {}
-    try:
-        body = response.json()
-    except ValueError:
-        body = None
-
-    assert body in (None, {}), "Non-existing user should not return a full payload"
-
+    # Reqres usually returns empty JSON {} on not-found
+    body = _maybe_json(response)
+    assert body in (None, {}), f"Expected empty/minimal body for not-found; got: {body}"
 
 @pytest.mark.api
 @pytest.mark.positive
 @pytest.mark.negative
 def test_register_user_success_and_missing_password_error():
     """
-    Combined positive + negative test for /register.
-
-    1) Valid email+password -> 200 + id + token
-    2) Missing password -> 400 + 'Missing password' error
+    Combined test covering:
+    1) Successful registration with valid email+password -> 200 + id + token
+    2) Error case for missing password -> 400 + error message
     """
     # 1) Successful registration
-    valid_payload = {
-        "email": "eve.holt@reqres.in",
-        "password": "pistol",
-    }
+    valid_payload = {"email": "eve.holt@reqres.in", "password": "pistol"}
     success_resp = requests.post(
         f"{BASE_URL}/register",
         json=valid_payload,
@@ -104,16 +108,14 @@ def test_register_user_success_and_missing_password_error():
         timeout=10,
     )
 
-    assert success_resp.status_code == 200, "Expected 200 for valid registration"
-
-    success_body = success_resp.json()
+    assert success_resp.status_code == 200, f"Expected 200 for valid registration; got {success_resp.status_code}"
+    success_body = _maybe_json(success_resp)
+    assert isinstance(success_body, dict), "Expected JSON body on successful register"
     assert "id" in success_body, "Successful register should return 'id'"
     assert "token" in success_body, "Successful register should return 'token'"
 
-    # 2) Missing password error case
-    missing_pwd_payload = {
-        "email": "sydney@fife",
-    }
+    # 2) Missing password -> error expected
+    missing_pwd_payload = {"email": "sydney@fife"}
     error_resp = requests.post(
         f"{BASE_URL}/register",
         json=missing_pwd_payload,
@@ -121,40 +123,25 @@ def test_register_user_success_and_missing_password_error():
         timeout=10,
     )
 
-    assert error_resp.status_code == 400, "Expected 400 when password is missing"
-
-    error_body = error_resp.json()
-    assert (
-        error_body.get("error") == "Missing password"
-    ), "Error message should be 'Missing password'"
-
+    assert error_resp.status_code == 400, f"Expected 400 when password is missing; got {error_resp.status_code}"
+    error_body = _maybe_json(error_resp)
+    assert error_body and error_body.get("error") == "Missing password", (
+        f"Expected error message 'Missing password', got: {error_body}"
+    )
 
 @pytest.mark.api
 @pytest.mark.positive
 def test_create_user_returns_created_resource_metadata():
     """
-    Positive test for POST /users:
-
-    - Returns 201 Created
-    - Echoes name / job from the request
-    - Returns generated id and createdAt timestamp
+    POST /users -> expect 201 Created and fields echoed back plus id and createdAt
     """
-    payload = {
-        "name": "qa-automation-candidate",
-        "job": "qa-intern",
-    }
+    payload = {"name": "qa-automation-candidate", "job": "qa-intern"}
+    response = requests.post(f"{BASE_URL}/users", json=payload, headers=HEADERS, timeout=10)
 
-    response = requests.post(
-        f"{BASE_URL}/users",
-        json=payload,
-        headers=HEADERS,
-        timeout=10,
-    )
-
-    assert response.status_code == 201, "Expected 201 for user creation"
-
-    body = response.json()
+    assert response.status_code == 201, f"Expected 201 for user creation; got {response.status_code}"
+    body = _maybe_json(response)
     assert body.get("name") == payload["name"], "Response should echo 'name'"
     assert body.get("job") == payload["job"], "Response should echo 'job'"
     assert "id" in body, "Response should contain generated 'id'"
     assert "createdAt" in body, "Response should contain 'createdAt' timestamp"
+

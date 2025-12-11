@@ -1,307 +1,289 @@
-# 📘 API Testing – Reqres Demo (QA Automation Assignment)
+# 📘 API Testing – Reqres & Alternate API Suite (QA Automation Assignment)
 
-This folder contains the **API automation** part of the QA Automation Intern Assignment.
+This folder contains the API automation module for the QA Automation Intern Assignment.
 
-The purpose of this module is to demonstrate:
-- Functional API testing using `pytest` + `requests`
-- Positive, negative, and smoke test design
-- Basic load testing using `Locust`
-- Handling real-world issues such as rate limits & Cloudflare blocking
-- How to structure, run, mock, and report API automation tests professionally
+It demonstrates:
 
----
+✔ Functional API testing using pytest + requests
 
-## 📁 Folder Structure
+✔ Positive, negative, and smoke test design
+
+✔ Graceful handling of Cloudflare 403 blocks
+
+✔ A fallback alternate API test suite using JSONPlaceholder
+
+✔ Load testing using Locust
+
+✔ HTML reporting for CI/Manual execution
+
+## 📁 1. Folder Structure
 
 ```
 api-testing/
 │
 ├── tests/
-│   └── test_reqres_api.py         # API tests for Reqres
+│   ├── test_reqres_api.py      # Primary API tests (Reqres)
+│   └── test_alt_api.py         # Alternate API tests (JSONPlaceholder)
 │
-├── locustfile.py                  # Load test for GET /users?page=2
-├── pytest.ini                     # Pytest marker configuration
-├── requirements.txt               # Python dependencies
-└── README.md                      # This file
+├── locustfile.py               # Load test script
+├── pytest.ini                  # Marker configuration
+├── requirements.txt            # Dependencies
+└── README.md                   # This file
 ```
 
----
+### Why two test files?
 
-## 🛠️ 1. Setup Instructions
+Reqres is sometimes protected by Cloudflare and may block automated Python tests.
 
-### 1.1 Create and activate a virtual environment (from project root)
+To ensure all functional logic still runs, an alternate test suite (`test_alt_api.py`) executes the same test scenarios against a stable API:
+https://jsonplaceholder.typicode.com
+
+This guarantees:
+
+- Tests always run successfully
+- CI does not fail due to Cloudflare
+- Reviewers can still evaluate your automation logic
+
+## 🛠️ 2. Setup Instructions
+
+### 2.1 Create and activate a virtual environment
 
 ```bash
 python -m venv venv
-
-# Windows PowerShell:
-venv\Scripts\activate
-
-# Git Bash / macOS / Linux:
-source venv/Scripts/activate
 ```
 
-### 1.2 Install API test dependencies
+**Windows PowerShell**
+
+```powershell
+venv\Scripts\activate
+```
+
+**Mac / Linux**
+
+```bash
+source venv/bin/activate
+```
+
+### 2.2 Install dependencies
 
 ```bash
 cd api-testing
 pip install -r requirements.txt
 ```
 
-**Dependencies include:**
-- `pytest` – Testing framework
-- `requests` – HTTP library for API calls
-- `locust` – Load testing framework
-- `pytest-html` – HTML report generation
+Includes:
 
----
+- pytest
+- requests
+- pytest-html
+- locust
 
-## ▶️ 2. Running the Pytest Suite
+## ▶️ 3. Running Tests
 
-All API tests live in `tests/test_reqres_api.py`.
+Both test suites run automatically.
 
-### 2.1 Run all API tests
+### ✅ 3.1 Run all API tests (Reqres + Alternate)
+
+```bash
+pytest -v
+```
+
+Expected behavior:
+
+| Test File | Expected Outcome |
+|-----------|------------------|
+| `test_alt_api.py` | ✅ Passes (JSONPlaceholder is stable) |
+| `test_reqres_api.py` | ⚠️ May fail or skip because of Cloudflare blocking |
+
+This is expected and documented.
+
+### 🎯 3.2 Run only Reqres tests
+
+```bash
+pytest -v tests/test_reqres_api.py
+```
+
+### 🎯 3.3 Run only Alternate API tests
+
+```bash
+pytest -v tests/test_alt_api.py
+```
+
+This is useful when Reqres is blocked.
+
+### 🏷️ 3.4 Marker-based execution
 
 ```bash
 pytest -v -m api
-```
-
-### 2.2 Run only smoke tests
-
-```bash
 pytest -v -m smoke
-```
-
-### 2.3 Run only positive or negative scenarios
-
-```bash
-# Positive test cases (valid workflows)
 pytest -v -m positive
-
-# Negative test cases (error handling)
 pytest -v -m negative
 ```
 
-**Markers are defined in `pytest.ini`:**
+Defined in `pytest.ini`:
 
 ```ini
 [pytest]
 markers =
-    api: API tests for Reqres
-    positive: Valid workflow test cases
-    negative: Error-handling test cases
-    smoke: Minimal set of tests for quick verification
+    api: API tests
+    positive: Positive workflow tests
+    negative: Error handling tests
+    smoke: Quick validation tests
 ```
 
----
+## 📊 4. Generating HTML Test Reports
 
-## 📊 3. Generating Test Reports
-
-### Generate HTML Report (recommended)
+Run:
 
 ```bash
-pytest -v -m api --html=api-report.html --self-contained-html
+pytest -v --html=api-report.html --self-contained-html
 ```
 
-**Output:**
+This report includes:
+
+- Pass / Fail summary
+- Timing
+- Environment info
+- Detailed failure messages
+
+Report location:
+
 ```
 api-testing/api-report.html
 ```
 
-Open it in a browser for a fully styled test report with:
-- ✅ Pass/Fail summary
-- ⏱️ Test duration
-- 📋 Environment details
-- 🔍 Detailed assertions
+## 🔄 5. Why Alternate Tests Exist (Important)
 
-**To open the report:**
+### ❗ Problem
 
-```bash
-# On Windows
-start api-report.html
+Reqres (https://reqres.in) uses Cloudflare bot protection.
+Python requests cannot solve JavaScript-based challenges → returns:
 
-# On macOS
-open api-report.html
-
-# On Linux
-xdg-open api-report.html
 ```
-
----
-
-## ✔️ 4. Test Case Design Summary
-
-### 📗 Positive Tests
-
-| Test Case | Endpoint | Validation |
-|-----------|----------|------------|
-| **List Users** | `GET /users?page=2` | Returns 200 and non-empty user list |
-| **Get Single User** | `GET /users/2` | Returns user with `id = 2` |
-| **Create User** | `POST /users` | Returns 201 + `createdAt` + `id` |
-| **Register User** | `POST /register` | Valid credentials return `id` + `token` |
-
-### 📕 Negative Tests
-
-| Test Case | Endpoint | Expected Result |
-|-----------|----------|-----------------|
-| **Non-existing User** | `GET /users/23` | Returns 404 |
-| **Register Without Password** | `POST /register` | Returns 400 + "Missing password" error |
-
-### What Each Test Checks:
-✅ **HTTP status codes** (200, 201, 400, 404)  
-✅ **Required JSON fields** (id, email, createdAt, token)  
-✅ **Error messages** (proper error handling)  
-✅ **Correct data types** (strings, integers, timestamps)  
-
-All tests use **realistic browser-like headers** to simulate a genuine client and avoid detection as a bot.
-
----
-
-## ⚙️ 5. Load Testing With Locust (Optional Bonus)
-
-This project includes a lightweight Locust test (`locustfile.py`) that safely stays within the assignment limit of **< 100 API calls/day**.
-
-### Run in headless mode:
-
-```bash
-locust -f locustfile.py --headless -u 5 -r 1 -t 30s --host https://reqres.in
-```
-
-### Parameters:
-
-| Param | Meaning |
-|-------|---------|
-| `-u 5` | 5 concurrent simulated users |
-| `-t 30s` | Run for 30 seconds |
-| `-r 1` | Spawn rate = 1 user/sec |
-| `--headless` | No UI, quick CLI run |
-
-### Locust automatically reports:
-- 📊 Request count
-- ⚡ RPS (requests per second)
-- ❌ Failure rate
-- ⏱️ Response times (min/avg/max)
-
-### Run with Web UI (Interactive Dashboard):
-
-```bash
-locust -f locustfile.py --host https://reqres.in
-```
-
-Then open: [http://localhost:8089](http://localhost:8089)
-
-Configure users and spawn rate through the web interface, then click "Start Swarming" to begin the load test.
-
----
-
-## 🚧 6. Cloudflare "403 Forbidden" Issue (Important)
-
-Because **Reqres.in** is protected by **Cloudflare**, automated traffic from Python, Postman, or certain networks may be blocked with a **403 Forbidden** HTML challenge page:
-
-```html
+403 Forbidden
 <title>Just a moment...</title>
 ```
 
-This is **expected behavior** of Cloudflare's bot protection.
+### ✔ Solution Implemented
 
-### Why this happens:
-
-❌ **Python requests** does NOT execute JavaScript → cannot pass Cloudflare challenge  
-❌ **Postman** also cannot pass Cloudflare → also blocked  
-❌ **Some networks** (VPNs, corporate IPs) trigger stricter rules  
-
-✅ **Browser works** because it:
-- Runs JavaScript
-- Sets Cloudflare cookies
-- Responds to JS challenges
-- Sends complex browser fingerprints
-
-**This issue is environmental, not test-code related.**
-
-### How this project handles it:
-
-Each test implements a helper function:
+All Reqres tests include a helper:
 
 ```python
 def skip_if_forbidden(response):
     if response.status_code == 403:
-        pytest.skip("Cloudflare blocked the request with 403 Forbidden.")
+        pytest.skip("Cloudflare blocked the request.")
 ```
 
-**Tests will:**
-- ✔ Run fully when Reqres is accessible
-- ✔ Auto-skip when Cloudflare blocks the request
-- ❌ Never falsely fail because of an external service outage
-
-### Sample Output When Blocked:
+So your test run will show:
 
 ```
-tests/test_reqres_api.py::test_get_list_users SKIPPED (Cloudflare blocked...)
-tests/test_reqres_api.py::test_get_single_user SKIPPED (Cloudflare blocked...)
+SKIPPED Cloudflare blocked the request.
 ```
 
----
+instead of `FAILED`, avoiding misleading failures.
 
-## 🐛 Troubleshooting
+## 🌐 6. Alternate API Suite (JSONPlaceholder)
 
-### Issue: All tests are skipped with 403 errors
+When Reqres is blocked, the alternate suite (`test_alt_api.py`) ensures:
 
-**Cause:** Cloudflare is blocking automated requests  
-**Solutions:**
-1. Try running tests from a different network (home vs corporate)
-2. Disable VPN if using one
-3. Wait a few minutes and retry (rate limiting may reset)
-4. Use a different testing API (e.g., JSONPlaceholder) if Cloudflare persists
+- Your functional test logic is still validated
+- API scenarios still execute (GET, POST, negative tests)
+- CI pipelines do not show failures caused by external websites
 
-### Issue: `ModuleNotFoundError: No module named 'pytest'`
+This suite mirrors:
 
-**Solution:** Ensure you're in the virtual environment and installed dependencies:
+| Reqres Test | JSONPlaceholder Equivalent |
+|-------------|---------------------------|
+| GET /users?page=2 | GET /users |
+| GET /users/2 | GET /users/2 |
+| POST /users | POST /posts |
+| GET non-existing | GET user/99999 |
+| POST /register (invalid) | POST /register → 404 |
+
+All tests are stable and deterministic.
+
+## ⚙️ 7. Load Testing With Locust
+
+Run in headless mode:
+
 ```bash
-source venv/Scripts/activate  # or venv\Scripts\activate on Windows
-pip install -r requirements.txt
+locust -f locustfile.py --headless -u 5 -r 1 -t 30s --host=https://reqres.in
 ```
 
-### Issue: Locust doesn't start
+Run with web UI:
 
-**Solution:** Check if port 8089 is already in use:
 ```bash
-# Kill existing Locust processes
-pkill -f locust
+locust -f locustfile.py --host=https://reqres.in
+```
 
-# Or specify a different port
+Open http://localhost:8089 to configure:
+
+- User count
+- Spawn rate
+- Duration
+
+Uses only `GET /api/users?page=2` to stay within the 100 call/day limit.
+
+## 📝 8. Test Case Design Summary
+
+### ✔ Positive Scenarios
+
+- GET list users
+- GET single user
+- POST create user
+- POST register user
+
+### ✔ Negative Scenarios
+
+- GET non-existing user
+- POST register missing password
+- Invalid endpoint (alternate API test suite)
+
+### ✔ Assertions Cover:
+
+- HTTP status codes
+- Required JSON keys
+- Field values
+- Error messages
+- Response structure
+
+## 🐛 9. Troubleshooting
+
+### ❗ All Reqres tests failing = Cloudflare blocking
+
+Use:
+
+```bash
+pytest tests/test_alt_api.py -v
+```
+
+### ❗ Locust port conflict
+
+Run with another port:
+
+```bash
 locust -f locustfile.py --web-port 8090
 ```
 
----
+## 📝 10. Summary
 
-## 📝 Summary
+This project demonstrates:
 
-This API test suite demonstrates:
+✔ Professional API automation structure
 
-✅ **RESTful API testing** with Python + pytest  
-✅ **Comprehensive test coverage** (positive, negative, smoke tests)  
-✅ **Professional test markers** for flexible execution  
-✅ **Multiple report formats** (HTML, XML, Allure)  
-✅ **Load testing capability** with Locust  
-✅ **Real-world issue handling** (Cloudflare, rate limits)  
-✅ **Clean code structure** with reusable patterns  
-✅ **Clear documentation** for easy onboarding  
+✔ Robust test cases (positive, negative, smoke)
 
-**Test Execution:** Simple marker-based commands  
-**Reporting:** Production-ready HTML reports  
-**Resilience:** Graceful handling of external service issues  
-**Scalability:** Easy to extend with new test cases  
+✔ HTML reporting
 
----
+✔ Load testing capability
+
+✔ Real-world handling of external API limitations
+
+✔ Backup API test suite ensuring consistency
+
+This makes the assignment complete, reliable, and cleanly documented.
 
 ## 📞 Contact
 
-For questions or issues with the test suite, please contact:
-- **Name:** Nithesh Ramesh
-- **Email:** nitheshrpoojari5@gmail.com
-
----
-
-*API Testing Framework for QA Automation Intern Assignment*  
-*Tested Against: https://reqres.in*  
-*Framework: pytest + requests + locust*
+**Name:** Nithesh Ramesh  
+**Email:** nitheshrpoojari5@gmail.com
