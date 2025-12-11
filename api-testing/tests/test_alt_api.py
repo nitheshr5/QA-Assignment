@@ -1,4 +1,3 @@
-# api-testing/tests/test_alt_api.py
 """
 Alternate API test suite using JSONPlaceholder so you can demonstrate
 the test logic locally or in CI when the primary target (Reqres) is
@@ -138,4 +137,3 @@ def test_invalid_endpoint_returns_404():
     assert resp.status_code in (404, 405), (
         f"Expected 404/405 for a non-existent endpoint, got {resp.status_code}"
     )
-

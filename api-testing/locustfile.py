@@ -1,4 +1,3 @@
-
 """
 Simple Locust load test for the Reqres scenario.
 

@@ -1,5 +1,3 @@
-# tests/test_reqres_api.py
-
 """
 Reqres API functional tests.
 
@@ -144,4 +142,3 @@ def test_create_user_returns_created_resource_metadata():
     assert body.get("job") == payload["job"], "Response should echo 'job'"
     assert "id" in body, "Response should contain generated 'id'"
     assert "createdAt" in body, "Response should contain 'createdAt' timestamp"
-

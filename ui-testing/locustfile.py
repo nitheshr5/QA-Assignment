@@ -1,3 +1,8 @@
+"""
+Simple Locust load test for key public pages on iamdave.ai.
+
+Keep simulated load small for the assignment (e.g., <100 requests/day).
+"""
 from locust import HttpUser, task, between
 
 class DaveAIUser(HttpUser):

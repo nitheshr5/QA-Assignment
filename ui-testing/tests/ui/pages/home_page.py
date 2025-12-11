@@ -1,6 +1,11 @@
 # tests/ui/pages/home_page.py
 
-from selenium.webdriver.common.by import By
+"""
+Home page actions.
+
+We keep these methods intentionally small. They either call BasePage.open
+or navigate to specific paths so tests remain declarative and readable.
+"""
 from .base_page import BasePage
 
 class HomePage(BasePage):
@@ -8,7 +13,11 @@ class HomePage(BasePage):
     CONTACT_URL = "/contact-us/"
 
     def go_to_solutions(self):
-        self.driver.get(self.base_url + self.SOLUTIONS_URL)
+        """Navigate directly to the Solutions page path."""
+        # Use the base open helper for consistent URL building
+        self.open(self.SOLUTIONS_URL)
 
     def go_to_contact(self):
-        self.driver.get(self.base_url + self.CONTACT_URL)
+        """Navigate directly to the Contact page path."""
+        self.open(self.CONTACT_URL)
+
