@@ -1,33 +1,65 @@
-name: UI Tests
+name: API & UI Tests
 
 on:
   push:
     branches: ["main"]
 
 jobs:
-  run-ui-tests:
+  run-tests:
     runs-on: ubuntu-latest
+    env:
+      # ensures chromium is found by webdriver / tests
+      CHROME_BIN: /usr/bin/chromium-browser
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-    # --- UI Tests Only ---
-    - name: Install UI dependencies
-    working-directory: ui-testing
-      run: pip install -r requirements.txt
+      # ------------------------
+      # API Tests
+      # ------------------------
+      - name: Install API dependencies
+        working-directory: api-testing
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Run UI Tests (Headless)
-      working-directory: ui-testing
-      run: pytest tests/ui -v --html=ui-report.html --self-contained-html
+      - name: Run API Tests
+        working-directory: api-testing
+        run: pytest tests -v
 
-    - name: Upload UI Report
-      uses: actions/upload-artifact@v4
-      with:
-        name: ui-test-report
-        path: ui-testing/ui-report.html
+      # ------------------------
+      # Install Chromium for Selenium
+      # ------------------------
+      - name: Install Chromium (for Selenium)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+
+      # ------------------------
+      # UI Tests
+      # ------------------------
+      - name: Install UI dependencies
+        working-directory: ui-testing
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run UI Tests (Headless)
+        working-directory: ui-testing
+        env:
+          # Ensure headless chrome uses this binary
+          CHROME_BIN: /usr/bin/chromium-browser
+        run: |
+          pytest tests/ui -v --html=ui-report.html --self-contained-html
+
+      - name: Upload UI Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-report
+          path: ui-testing/ui-report.html
