@@ -2,16 +2,17 @@ name: UI + Alternate API Tests (DaveAI)
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
   pull_request:
-    branches: ["main"]
+    branches:
+      - main
 
 jobs:
   ui-tests:
     name: UI Tests (Headless Chrome)
     runs-on: ubuntu-latest
     env:
-      # helps some libs locate chrome binary
       CHROME_BIN: /usr/bin/chromium-browser
 
     steps:
@@ -26,7 +27,6 @@ jobs:
       - name: Install system deps for Chrome
         run: |
           sudo apt-get update
-          # install chromium browser and libs required by headless chrome
           sudo apt-get install -y chromium-browser fonts-liberation libnss3 libxss1 \
             libasound2 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libgtk-3-0
 
@@ -52,7 +52,7 @@ jobs:
   api-alt-tests:
     name: Alternate API Tests (JSONPlaceholder)
     runs-on: ubuntu-latest
-    needs: []               # run independently (no dependency on ui-tests)
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -70,11 +70,7 @@ jobs:
 
       - name: Run Alternate API tests (jsonplaceholder)
         working-directory: api-testing
-        env:
-          # Optionally override to point to another API (e.g., Reqres) if you want:
-          # BASE_API_URL: "https://reqres.in/api"
         run: |
-          # Run the alternate-only API tests so CI doesn't fail due to Cloudflare
           pytest -v tests/test_alt_api.py --html=api-report.html --self-contained-html
 
       - name: Upload API HTML Report
