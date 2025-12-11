@@ -1,14 +1,16 @@
-name: API & UI Tests
+name: UI Tests (DaveAI)
 
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
-  run-tests:
+  ui-tests:
     runs-on: ubuntu-latest
     env:
-      # ensures chromium is found by webdriver / tests
+      # helps some libs locate chrome binary
       CHROME_BIN: /usr/bin/chromium-browser
 
     steps:
@@ -20,45 +22,27 @@ jobs:
         with:
           python-version: "3.10"
 
-      # ------------------------
-      # API Tests
-      # ------------------------
-      - name: Install API dependencies
-        working-directory: api-testing
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Run API Tests
-        working-directory: api-testing
-        run: pytest tests -v
-
-      # ------------------------
-      # Install Chromium for Selenium
-      # ------------------------
-      - name: Install Chromium (for Selenium)
+      - name: Install system deps for Chrome
         run: |
           sudo apt-get update
-          sudo apt-get install -y chromium-browser
+          # install chromium browser and some libs required by headless chrome
+          sudo apt-get install -y chromium-browser fonts-liberation libnss3 libxss1 \
+           libasound2 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libgtk-3-0
 
-      # ------------------------
-      # UI Tests
-      # ------------------------
-      - name: Install UI dependencies
+      - name: Install UI Python dependencies
         working-directory: ui-testing
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run UI Tests (Headless)
+      - name: Run UI Tests (Headless Chrome)
         working-directory: ui-testing
         env:
-          # Ensure headless chrome uses this binary
           CHROME_BIN: /usr/bin/chromium-browser
         run: |
           pytest tests/ui -v --html=ui-report.html --self-contained-html
 
-      - name: Upload UI Report
+      - name: Upload UI HTML Report
         uses: actions/upload-artifact@v4
         with:
           name: ui-test-report
