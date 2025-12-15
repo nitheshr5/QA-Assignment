@@ -1,23 +1,22 @@
 """
-Simple Locust load test for the Reqres scenario.
+Locust load test for JSONPlaceholder API.
+Safe alternative to Reqres for performance testing.
 
-Usage:
-    locust -f locustfile.py --host=https://reqres.in
+Run:
+    locust -f locustfile_jsonplaceholder.py --host=https://jsonplaceholder.typicode.com
 
 Notes:
-- Keep the simulated load very small to respect the assignment constraint
-  of a maximum ~100 API calls within the day.
-- You can configure number of users and spawn rate from the Locust web UI.
+- JSONPlaceholder is a public fake API — responses are static.
+- Keep load small (1–5 users) to avoid unnecessary stress on public services.
 """
 
 from locust import HttpUser, task, between
 
-class ReqresUser(HttpUser):
-    # Each simulated user waits between 1 and 3 seconds between tasks
+class JsonPlaceholderUser(HttpUser):
     wait_time = between(1, 3)
 
     def on_start(self):
-        # Set browser-like headers on the session to reduce blocking likelihood
+        # Set headers to mimic a real browser
         self.client.headers.update(
             {
                 "User-Agent": (
@@ -29,18 +28,22 @@ class ReqresUser(HttpUser):
             }
         )
 
-    @task
-    def list_users_page_2(self):
-        """
-        Simple scenario: GET /api/users?page=2
-        This mirrors the functional test 'test_get_users_page_2_returns_non_empty_list'.
-        """
-        response = self.client.get(
-            "/api/users",
-            params={"page": 2},
-            name="GET /api/users?page=2",
-            timeout=10,
-        )
-        # Locust collects stats automatically. Print only for optional debug.
-        if response.status_code != 200:
-            print(f"[locust] Unexpected status code: {response.status_code}")
+    @task(3)
+    def list_users(self):
+        """GET /users – weighted more heavily (3x)."""
+        self.client.get("/users", name="GET /users", timeout=10)
+
+    @task(2)
+    def get_single_user(self):
+        """GET /users/1."""
+        self.client.get("/users/1", name="GET /users/1", timeout=10)
+
+    @task(1)
+    def create_post(self):
+        """POST /posts – create a fake post."""
+        payload = {
+            "title": "locust-test-title",
+            "body": "load testing using locust",
+            "userId": 999
+        }
+        self.client.post("/posts", json=payload, name="POST /posts", timeout=10)

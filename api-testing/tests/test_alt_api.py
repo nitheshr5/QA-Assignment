@@ -107,8 +107,8 @@ def test_create_post_success():
     """
     url = f"{BASE_URL}/posts"
     payload = {
-        "title": "qa-automation-candidate",
-        "body": "testing create via jsonplaceholder",
+        "title": "nithesh-automation-test",
+        "body": "dummy post for testing",
         "userId": 1,
     }
     resp = requests.post(url, json=payload, headers=HEADERS, timeout=10)

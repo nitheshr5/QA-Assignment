@@ -14,7 +14,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 @pytest.fixture(scope="session")
 def base_url():
-    # Make it easy to override in CI or locally: export BASE_URL="https://staging.example"
+# Make it easy to override in CI or locally: export BASE_URL="https://staging.iamdave.ai"
     return os.environ.get("BASE_URL", "https://www.iamdave.ai")
 
 
