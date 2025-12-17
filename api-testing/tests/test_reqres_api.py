@@ -1,3 +1,5 @@
+#tests/test_regres_api.py
+
 """
 Reqres API functional tests.
 

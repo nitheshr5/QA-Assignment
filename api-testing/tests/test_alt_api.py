@@ -1,3 +1,5 @@
+#tests/test_alt_api.py
+
 """
 Alternate API test suite using JSONPlaceholder so you can demonstrate
 the test logic locally or in CI when the primary target (Reqres) is
@@ -128,7 +130,7 @@ def test_invalid_endpoint_returns_404():
     This mirrors negative tests for missing parameters on other APIs.
     """
     url = f"{BASE_URL}/register"  # JSONPlaceholder does not have /register
-    resp = requests.post(url, json={"email": "a@b.com"}, headers=HEADERS, timeout=10)
+    resp = requests.post(url, json={"email": "nithesh@test.com"}, headers=HEADERS, timeout=10)
 
     # If Cloudflare-like blocking occurs, skip instead of failing the job
     if resp.status_code == 403:

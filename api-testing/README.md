@@ -1,6 +1,6 @@
-# 📘 API Testing – Reqres & Alternate API Suite (QA Automation Assignment)
+# 📘 API Testing – Reqres & Alternate API Suite
 
-This folder contains the API automation module for the QA Automation Intern Assignment.
+This module contains the API automation suite for the QA Automation Assignment.
 
 It demonstrates:
 
@@ -16,7 +16,38 @@ It demonstrates:
 
 ✔ HTML reporting for CI/Manual execution
 
-## 📁 1. Folder Structure
+## 📋 Table of Contents
+
+1. [Overview](#-overview)
+2. [Project Structure](#-project-structure)
+3. [Prerequisites](#-prerequisites)
+4. [Installation](#-installation)
+5. [Running Tests](#-running-tests)
+6. [HTML Reports](#-html-reports)
+7. [Design Choices](#-design-choices)
+8. [Simple API Tests & Manual Test Cases (Fundamentals Layer)](#-simple-api-tests--manual-test-cases-fundamentals-layer)
+9. [Load Testing](#-load-testing)
+10. [Troubleshooting](#-troubleshooting)
+11. [Contact](#-contact)
+12. [Summary](#-summary)
+
+## 🎯 Overview
+
+This API test suite automates essential API workflows for testing.
+
+### ✔ Current Test Coverage
+
+- GET List Users
+- GET Single User
+- POST Create User
+- POST Register User
+- Negative Scenarios (Non-existing User, Missing Password, Invalid Endpoints)
+
+All tests use **Pytest + Requests** for clean, maintainable automation.
+
+**Average execution time:** 10–15 seconds
+
+## 📁 Project Structure
 
 ```
 api-testing/
@@ -31,12 +62,13 @@ api-testing/
 └── README.md                   # This file
 ```
 
-### Why two test files?
+### Why Two Test Files?
 
 Reqres is sometimes protected by Cloudflare and may block automated Python tests.
 
 To ensure all functional logic still runs, an alternate test suite (`test_alt_api.py`) executes the same test scenarios against a stable API:
-https://jsonplaceholder.typicode.com
+
+👉 https://jsonplaceholder.typicode.com
 
 This guarantees:
 
@@ -44,51 +76,38 @@ This guarantees:
 - CI does not fail due to Cloudflare
 - Reviewers can still evaluate your automation logic
 
-## 🛠️ 2. Setup Instructions
+## ✅ Prerequisites
 
-### 2.1 Create and activate a virtual environment
+Before running the API tests, ensure you have:
 
-```bash
-python -m venv venv
-```
+- **Python 3.7+**
+- **Internet connection** (tests run against live APIs)
 
-**Windows PowerShell**
+## 🔧 Installation
 
-```powershell
-venv\Scripts\activate
-```
-
-**Mac / Linux**
-
-```bash
-source venv/bin/activate
-```
-
-### 2.2 Install dependencies
+From the project root:
 
 ```bash
 cd api-testing
 pip install -r requirements.txt
 ```
 
-Includes:
+### Key Dependencies
 
 - pytest
 - requests
 - pytest-html
-- locust
+- locust (optional)
 
-## ▶️ 3. Running Tests
+## 🚀 Running Tests
 
-Both test suites run automatically.
-
-### ✅ 3.1 Run all API tests (Reqres + Alternate)
+### Option 1: Run All API Tests (Verbose Output)
 
 ```bash
 pytest -v
 ```
 
-Expected behavior:
+**Expected Behavior:**
 
 | Test File | Expected Outcome |
 |-----------|------------------|
@@ -97,13 +116,27 @@ Expected behavior:
 
 This is expected and documented.
 
-### 🎯 3.2 Run only Reqres tests
+### Option 2: Generate HTML Report
+
+```bash
+pytest -v --html=api-report.html --self-contained-html
+```
+
+This generates a standalone HTML report (`api-report.html`) containing:
+
+- Execution summary
+- Test duration
+- Environment details
+- Colored pass/fail results
+- Detailed failure messages
+
+### Option 3: Run Only Reqres Tests
 
 ```bash
 pytest -v tests/test_reqres_api.py
 ```
 
-### 🎯 3.3 Run only Alternate API tests
+### Option 4: Run Only Alternate API Tests
 
 ```bash
 pytest -v tests/test_alt_api.py
@@ -111,7 +144,7 @@ pytest -v tests/test_alt_api.py
 
 This is useful when Reqres is blocked.
 
-### 🏷️ 3.4 Marker-based execution
+### Option 5: Marker-Based Execution
 
 ```bash
 pytest -v -m api
@@ -131,40 +164,41 @@ markers =
     smoke: Quick validation tests
 ```
 
-## 📊 4. Generating HTML Test Reports
+## 📊 HTML Reports
 
-Run:
+To open the generated HTML report:
 
 ```bash
-pytest -v --html=api-report.html --self-contained-html
+# Windows
+start api-report.html
+
+# macOS
+open api-report.html
+
+# Linux
+xdg-open api-report.html
 ```
 
-This report includes:
+HTML report includes:
 
-- Pass / Fail summary
-- Timing
-- Environment info
-- Detailed failure messages
+- Test results
+- Execution environment
+- Traceback for failures
+- Pass/Fail summary with timing
 
-Report location:
+## 🎨 Design Choices
 
-```
-api-testing/api-report.html
-```
+### 1. Pytest Framework
 
-## 🔄 5. Why Alternate Tests Exist (Important)
+Organizes code with:
 
-### ❗ Problem
+- **Test functions** → clear test scenarios
+- **Markers** → categorize tests (smoke, positive, negative)
+- **Fixtures** → reusable setup/teardown
 
-Reqres (https://reqres.in) uses Cloudflare bot protection.
-Python requests cannot solve JavaScript-based challenges → returns:
+This makes tests readable and easy to extend.
 
-```
-403 Forbidden
-<title>Just a moment...</title>
-```
-
-### ✔ Solution Implemented
+### 2. Cloudflare Handling
 
 All Reqres tests include a helper:
 
@@ -182,7 +216,7 @@ SKIPPED Cloudflare blocked the request.
 
 instead of `FAILED`, avoiding misleading failures.
 
-## 🌐 6. Alternate API Suite (JSONPlaceholder)
+### 3. Alternate API Suite
 
 When Reqres is blocked, the alternate suite (`test_alt_api.py`) ensures:
 
@@ -202,52 +236,73 @@ This suite mirrors:
 
 All tests are stable and deterministic.
 
-## ⚙️ 7. Load Testing With Locust
+### 4. Test Coverage
 
-Run in headless mode:
+Tests cover:
+
+- **Positive scenarios** → GET list users, GET single user, POST create user, POST register user
+- **Negative scenarios** → GET non-existing user, POST register missing password, Invalid endpoint
+- **Assertions** → HTTP status codes, Required JSON keys, Field values, Error messages, Response structure
+
+## 🧩 Simple API Tests & Manual Test Cases (Fundamentals Layer)
+
+Alongside the PyTest-based API automation framework, this module also includes a simple API test script and manual test case documentation to demonstrate strong testing fundamentals.
+
+### 📄 Files Included
+
+- **`simple_api_test.py`** – A lightweight API testing script written using Python's `requests` library. It avoids frameworks and focuses on clear, step-by-step validation of API responses.
+- **`testcase.md`** – Contains manual API test cases with objectives, endpoints, test steps, and expected results. These test cases serve as the foundation for both the simple script and the PyTest-based tests.
+
+### 🎯 Purpose
+
+This fundamentals layer is included to:
+
+- Demonstrate manual API test design
+- Show how test cases are translated into automation
+- Provide easy-to-explain API tests for interviews
+- Maintain clear traceability between test cases and code
+- Ensure reliability when primary APIs are blocked or unavailable
+
+### ▶️ Run the Simple API Tests
+
+```bash
+cd api-testing
+python simple_api_test.py
+```
+
+💡 **The simple API script complements the PyTest framework tests and is intended to highlight core API testing concepts before introducing advanced automation patterns.**
+
+## ⚡ Load Testing
+
+A Locust script is included to measure response performance of API endpoints.
+
+**Run in headless mode:**
 
 ```bash
 locust -f locustfile.py --headless -u 5 -r 1 -t 30s --host=https://reqres.in
 ```
 
-Run with web UI:
+**Run with web UI:**
 
 ```bash
 locust -f locustfile.py --host=https://reqres.in
 ```
 
-Open http://localhost:8089 to configure:
+**Open:**
 
-- User count
-- Spawn rate
-- Duration
+👉 http://localhost:8089
+
+Configure users and start load simulation.
+
+**Locust reports:**
+
+- Requests per second
+- Response time distribution
+- Failure rate
 
 Uses only `GET /api/users?page=2` to stay within the 100 call/day limit.
 
-## 📝 8. Test Case Design Summary
-
-### ✔ Positive Scenarios
-
-- GET list users
-- GET single user
-- POST create user
-- POST register user
-
-### ✔ Negative Scenarios
-
-- GET non-existing user
-- POST register missing password
-- Invalid endpoint (alternate API test suite)
-
-### ✔ Assertions Cover:
-
-- HTTP status codes
-- Required JSON keys
-- Field values
-- Error messages
-- Response structure
-
-## 🐛 9. Troubleshooting
+## 🐛 Troubleshooting
 
 ### ❗ All Reqres tests failing = Cloudflare blocking
 
@@ -265,25 +320,37 @@ Run with another port:
 locust -f locustfile.py --web-port 8090
 ```
 
-## 📝 10. Summary
+### ❗ Module not found errors
 
-This project demonstrates:
+```bash
+pip install -r requirements.txt
+```
 
-✔ Professional API automation structure
+### ❗ Connection errors
 
-✔ Robust test cases (positive, negative, smoke)
-
-✔ HTML reporting
-
-✔ Load testing capability
-
-✔ Real-world handling of external API limitations
-
-✔ Backup API test suite ensuring consistency
-
-This makes the assignment complete, reliable, and cleanly documented.
+Check internet connection and verify API endpoints are accessible.
 
 ## 📞 Contact
 
+For issues or questions:
+
 **Name:** Nithesh Ramesh  
 **Email:** nitheshrpoojari5@gmail.com
+
+## 📝 Summary
+
+This API Automation Suite demonstrates:
+
+✔ Pytest + Requests automation
+
+✔ Robust test cases (positive, negative, smoke)
+
+✔ Graceful handling of Cloudflare blocks
+
+✔ Backup API test suite for consistency
+
+✔ Beautiful HTML reports
+
+✔ Optional Locust load testing
+
+✔ Professional structure and documentation

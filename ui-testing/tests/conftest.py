@@ -1,3 +1,4 @@
+#tests/conftest.py
 """
 Pytest fixtures for UI tests.
 

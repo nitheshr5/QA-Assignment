@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 class BasePage:
     def __init__(self, driver, base_url=None, timeout: int = 10):
         self.driver = driver
-        self.base_url = base_url or ""
+        self.base_url = base_url or ""  
         self.wait = WebDriverWait(driver, timeout)
 
     def open(self, path: str = ""):

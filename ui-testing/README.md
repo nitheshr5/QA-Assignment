@@ -16,9 +16,10 @@ The tests follow the **Page Object Model (POM)** pattern to ensure clarity, reus
 6. [HTML Reports](#-html-reports)
 7. [Design Choices](#-design-choices)
 8. [Bonus: Load Testing](#-bonus-load-testing)
-9. [Troubleshooting](#-troubleshooting)
-10. [Contact](#-contact)
-11. [Summary](#-summary)
+9. [Simple UI Tests & Manual Test Cases (Learning Layer)](#-simple-ui-tests--manual-test-cases-learning-layer)
+10. [Troubleshooting](#-troubleshooting)
+11. [Contact](#-contact)
+12. [Summary](#-summary)
 
 ## 🎯 Overview
 
@@ -212,6 +213,33 @@ Configure users and start load simulation.
 - Requests per second
 - Response time distribution
 - Failure rate
+
+## 🧩 Simple UI Tests & Manual Test Cases (Learning Layer)
+
+In addition to the framework-based UI automation, this module also includes a simple Selenium script and manual test case documentation to demonstrate core testing fundamentals.
+
+### 📄 Files Included
+
+- **`simple_ui_test.py`** – A standalone Selenium script written without PyTest or Page Object Model. Each step maps directly to a manual test case and is easy to read and explain.
+- **`testcase.md`** – Contains clearly written manual UI test cases with test steps and expected results. These test cases are the basis for both the simple script and the POM-based automation.
+
+### 🎯 Purpose
+
+This layer is intentionally kept simple to:
+
+- Show understanding of manual test case design
+- Demonstrate how manual test cases are converted into automation
+- Make UI automation easy to explain in interviews
+- Provide clear traceability between test cases and code
+
+### ▶️ Run the Simple UI Test
+
+```bash
+cd ui-testing
+python simple_ui_test.py
+```
+
+💡 **The simple script complements the framework-based tests and is not a replacement.** It demonstrates testing fundamentals before introducing scalable automation patterns.
 
 ## 🐛 Troubleshooting
 
