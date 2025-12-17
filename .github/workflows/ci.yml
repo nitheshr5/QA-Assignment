@@ -13,7 +13,6 @@ jobs:
     name: UI Tests (Headless Chrome)
     runs-on: ubuntu-latest
     env:
-      # try common chromium binary location
       CHROME_BIN: /usr/bin/chromium
 
     steps:
@@ -28,7 +27,6 @@ jobs:
       - name: Install system deps for Chrome
         run: |
           sudo apt-get update
-          # Install Chromium and supporting libraries (avoid problematic libasound2)
           sudo apt-get install -y chromium fonts-liberation libnss3 libxss1 \
             libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libgtk-3-0
 
@@ -38,12 +36,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run UI Tests (Headless Chromium)
+      - name: Run UI Tests (excluding simple demo script)
         working-directory: ui-testing
         env:
           CHROME_BIN: /usr/bin/chromium
         run: |
-          pytest tests/ui -v --html=ui-report.html --self-contained-html
+          pytest tests/ui \
+            --ignore=tests/ui/simple_ui_test.py \
+            -v \
+            --html=ui-report.html \
+            --self-contained-html
 
       - name: Upload UI HTML Report
         uses: actions/upload-artifact@v4
@@ -69,13 +71,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # ensure pytest-html is available for report generation
           pip install pytest-html
 
-      - name: Run Alternate API tests (jsonplaceholder)
+      - name: Run Alternate API tests
         working-directory: api-testing
         run: |
-          pytest -v tests/test_alt_api.py --html=api-report.html --self-contained-html
+          pytest -v tests/test_alt_api.py \
+            --html=api-report.html \
+            --self-contained-html
 
       - name: Upload API HTML Report
         uses: actions/upload-artifact@v4
