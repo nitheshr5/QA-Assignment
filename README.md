@@ -12,7 +12,7 @@ The project is structured professionally, follows industry standards, and includ
 
 ✔ HTML reporting
 
-✔ GitHub Actions CI/CD
+✔ GitHub Actions CI/CD 
 
 ✔ Cloudflare-handling logic (real-world consideration)
 

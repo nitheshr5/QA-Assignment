@@ -7,7 +7,7 @@ Run:
 
 Notes:
 - JSONPlaceholder is a public fake API — responses are static.
-- Keep load small (1–5 users) to avoid unnecessary stress on public services.
+- Keep load small to avoid unnecessary stress on public services.
 """
 
 from locust import HttpUser, task, between

@@ -135,7 +135,7 @@ def test_create_user_returns_created_resource_metadata():
     """
     POST /users -> expect 201 Created and fields echoed back plus id and createdAt
     """
-    payload = {"name": "qa-automation-candidate", "job": "qa-intern"}
+    payload = {"name": "Nithesh", "job": "qa-intern"}
     response = requests.post(f"{BASE_URL}/users", json=payload, headers=HEADERS, timeout=10)
 
     assert response.status_code == 201, f"Expected 201 for user creation; got {response.status_code}"
